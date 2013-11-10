@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Base">
+      <UniqueIdentifier>{0de13868-10b4-4393-994f-a93ab6da466d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\include">
+      <UniqueIdentifier>{2649d06f-8430-44a2-b5ff-64c9d9762225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base\source">
+      <UniqueIdentifier>{2241d35f-8ef1-412f-bac2-aef79ecd54f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Socket">
+      <UniqueIdentifier>{7ea30860-d1b6-47ff-91fa-0f86f86aac1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Socket\include">
+      <UniqueIdentifier>{d0e5abd5-c481-4567-936e-e5ceca4ca9ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Socket\source">
+      <UniqueIdentifier>{a0a60435-0f61-4917-9746-f534fbf21750}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\source\base\Base_system.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\Base_types.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\macros.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\atom.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\AutoDelete.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\IOBlock.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\IOBuffer.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\Lock.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\MemoryPool.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\SharePtr.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\Signal.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\Thread.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\ThreadPool.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\MutexQueue.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\AllocFromMemoryPool.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\MemoryPoolManager.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\File.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\ConfigFile.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\base\LogFile.h">
+      <Filter>Base\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\Observer.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\ObserverSubject.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\NetProtocol.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\NetHost.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\IOCPDriver.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\IODriver.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\NetSocket.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\NetSocketPool.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\source\Socket\Socket.h">
+      <Filter>Socket\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\source\base\Lock.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\MemoryPool.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\Signal.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\Thread.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\ThreadPool.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\MemoryManager.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\ConfigFile.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\LogFile.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\base\File.cpp">
+      <Filter>Base\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\NetProtocol.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\NetHost.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\IOCPDriver.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\IODriver.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\NetSocket.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\NetSocketPool.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\Socket.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\source\Socket\ObserverSubject.cpp">
+      <Filter>Socket\source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
