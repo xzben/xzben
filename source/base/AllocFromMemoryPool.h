@@ -12,7 +12,7 @@
 #ifndef __2013_08_07_ALLOCATE_MEMORY_FROM_MEMORY_POOL_H__
 #define __2013_08_07_ALLOCATE_MEMORY_FROM_MEMORY_POOL_H__
 
-#include"MemoryPool.h"
+#include "MemoryPool.h"
 #include "MemoryPoolManager.h"
 
 namespace XZBEN

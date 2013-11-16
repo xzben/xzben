@@ -53,58 +53,46 @@ void IODriver::ThreadLoop()
 	m_IOEventThreadPool.WaitStop();
 }
 
-bool IODriver::AddTcpMonitor(SOCKET sock)
+bool IODriver::ListenTcpPort(uint16 nPort)
 {
-	if( !AddMonitor(sock) || !AddAccept(sock) )
-		return false;
-	return true;
-}
-
-bool IODriver::AddUdpMonitor(SOCKET sock)
-{
-	NetUdp *pNetUdp = new NetServerUdp(this, sock);
-	if( !AddMonitor(sock) || !AddRecvFrom(pNetUdp) || !m_NetSockPool.AddNetUdp(pNetUdp))
-		return false;
-
-	return true;
-}
-
-bool IODriver::ListernTcpPort(uint16 nPort)
-{
-	if( IsListernPort(nPort) ) 
+	if( IsListenPort(nPort) ) 
 		return false;
 
 	Socket socket(TCP);
-	if( !socket.StartServer(TCP, nPort) || !AddTcpMonitor(socket.Dettach()) )
+	if( !socket.StartServer(TCP, nPort) )
+		return false;
+
+	SOCKET hSocket = socket.Dettach();
+	if( !AddMonitor(hSocket) || !AddAccept(hSocket) )
 		return false;
 
 	return AddListenPort(nPort);
 }
 
-bool IODriver::ListernUdpPort(uint16 nPort)
+bool IODriver::ListenUdpPort(uint16 nPort)
 {
-	if( IsListernPort(nPort))
+	if( IsListenPort(nPort))
 		return false;
 
 	Socket socket(UDP);
-	if( !socket.StartServer(UDP, nPort) || !AddUdpMonitor(socket.Dettach()) )
-		return false;
 	
+	if( !socket.SetReuseAddr() 
+	 || !socket.StartServer(UDP, nPort) )
+		return false;
+
+	SOCKET hSocket = socket.Dettach();
+	ShareNetUdpPtr pNetUdp = new NetServerUdp(this, hSocket);
+	if( !AddMonitor(hSocket) || !AddRecvFrom(pNetUdp) || !m_NetSockPool.AddNetUdp(pNetUdp) )
+	{
+		DELETE_SHARE_PTR(pNetUdp);
+		return false;
+	}
+
 	return AddListenPort(nPort);
 }
 
-bool IODriver::AddRecvFrom(SOCKET sock)
-{
-	NetUdp *pNetUdp = new NetUdp(this, sock);
-
-	if( !AddRecvFrom(pNetUdp) || !m_NetSockPool.AddNetUdp(pNetUdp) )
-		return false;
-
-	pNetUdp->SetRecvStatus(true);
-	return true;
-}
 //Port list
-bool IODriver::IsListernPort(uint16 nPort)
+bool IODriver::IsListenPort(uint16 nPort)
 {
 	AutoLock lock(&m_mutex);
 	PortList::iterator it = std::find(m_PortList.begin(), m_PortList.end(), nPort);
@@ -122,10 +110,10 @@ bool IODriver::AddListenPort(uint16 nPort)
 
 SOCKET	IODriver::Connect(const char* szIp, uint16 nPort, bool bAutoConnect)
 {
-	NetTcp* pNetTcp = new NetTcp(this, bAutoConnect);
+	ShareNetTcpPtr pNetTcp = new NetTcp(this, bAutoConnect);
 	if( !pNetTcp->Connect(szIp, nPort) || !AddRecv(pNetTcp) || !m_NetSockPool.AddNetTcp(pNetTcp))
 	{
-		delete pNetTcp;
+		DELETE_SHARE_PTR(pNetTcp);
 		return INVALID_SOCKET;
 	}
 
@@ -134,7 +122,7 @@ SOCKET	IODriver::Connect(const char* szIp, uint16 nPort, bool bAutoConnect)
 
 bool IODriver::SendTcpMSG(SOCKET hSocket, void *pBuffer, int nDataSize)
 {
-	NetTcp* pNetTcp = m_NetSockPool.FindNetTcp(hSocket);
+	ShareNetTcpPtr pNetTcp = m_NetSockPool.FindNetTcp(hSocket);
 	if(nullptr == pNetTcp)
 		return false;
 
@@ -148,13 +136,13 @@ bool IODriver::SendUdpMSG(const char* szIp, uint16 nPort, void *pBuffer, int nLe
 	socket.StartServer(UDP, nBindPort);
 	SOCKET hSock = socket.Dettach();
 	
-	NetUdp* pNetUdp = new NetUdp(this, hSock, true);
+	ShareNetUdpPtr pNetUdp = new NetUdp(this, hSock, true);
 	if( !pNetUdp->SetPeer(szIp, nPort) 
 	 || !AddMonitor(hSock) 
 	 || !AddRecvFrom(pNetUdp)
 	 ||	!m_NetSockPool.AddNetUdp(pNetUdp))
 	{
-		SAFE_DELETE(pNetUdp);
+		DELETE_SHARE_PTR(pNetUdp);
 		return false;
 	}
 	
@@ -169,43 +157,48 @@ bool IODriver::OnAccept(IO_EVENT &event)
 {
 	AddAccept(event._sock);
 
-	NetTcp *pNetTcp = new NetTcp(this, false, true);
+	ShareNetTcpPtr pNetTcp = new NetTcp(this, false, true);
 	if( !pNetTcp->CreateConnect(event._client) || !m_NetSockPool.AddNetTcp(pNetTcp) )
 		return false;
-
+	
+	pNetTcp->SetOperatorStatus(true);
 	Notify(IOS_ACCEPT, pNetTcp);
-
+	pNetTcp->SetOperatorStatus(false);
 	return true;
 }
 
 bool IODriver::OnDisConnect(IO_EVENT &event)
 {
-	NetTcp *pNetTcp = m_NetSockPool.FindNetTcp(event._client);
-	if(nullptr == pNetTcp) 
-		return false;
+	ShareNetTcpPtr pNetTcp = m_NetSockPool.FindNetTcp(event._client);
+	if(nullptr == pNetTcp)//连接删除，说明连接断开，直接返回true
+		return true;
 	
+	pNetTcp->SetOperatorStatus(true);
 	Notify(IOS_DISCONNECT, pNetTcp);
+	pNetTcp->SetOperatorStatus(false);
 
 	return m_NetSockPool.DelNetTcp(pNetTcp);
 }
 bool IODriver::OnRecv(IO_EVENT &event)
 {
-	NetTcp* pNetTcp = m_NetSockPool.FindNetTcp(event._client);
-	if(nullptr == pNetTcp)
-		return false;
-	
+	ShareNetTcpPtr pNetTcp = m_NetSockPool.FindNetTcp(event._client);
+	if(nullptr == pNetTcp)//连接删除，说明连接断开，直接返回true
+		return true;
+
 	if( !pNetTcp->RecvDone(event._nDataSize) )
 		return false;
 
+	pNetTcp->SetOperatorStatus(true);
 	Notify(IOS_RECV, pNetTcp);
-	
+	pNetTcp->SetOperatorStatus(false);
+
 	return true;
 }
 bool IODriver::OnSendOut(IO_EVENT &event)
 {
-	NetTcp* pNetTcp = m_NetSockPool.FindNetTcp(event._client);
-	if(nullptr == pNetTcp)
-		return false;
+	ShareNetTcpPtr pNetTcp = m_NetSockPool.FindNetTcp(event._client);
+	if(nullptr == pNetTcp)//连接删除，说明连接断开，直接返回true
+		return true;
 
 	if( !pNetTcp->SendOut(event._nDataSize) )
 		return false;
@@ -215,23 +208,25 @@ bool IODriver::OnSendOut(IO_EVENT &event)
 
 bool IODriver::OnRecvFrom(IO_EVENT &event)
 {
-	NetUdp *pNetUdp = m_NetSockPool.FindNetUdp(event._client);
-	if(nullptr == pNetUdp)
-		return false;
+	ShareNetUdpPtr pNetUdp = m_NetSockPool.FindNetUdp(event._client);
+	if(nullptr == pNetUdp)//连接删除，说明连接断开，直接返回true
+		return true;
 	
 	if( !pNetUdp->SetPeer(event._udpClientAddress) || !pNetUdp->RecvDone(event._nDataSize) )
 		return false;
 
+	pNetUdp->SetOperatorStatus(true);
 	Notify(IOS_RECVFROM, pNetUdp);
+	pNetUdp->SetOperatorStatus(false);
 
 	return true;
 }
 
 bool IODriver::OnSendToOut(IO_EVENT &event)
 {
-	NetUdp *pNetUdp = m_NetSockPool.FindNetUdp(event._client);
-	if(nullptr == pNetUdp)
-		return false;
+	ShareNetUdpPtr pNetUdp = m_NetSockPool.FindNetUdp(event._client);
+	if(nullptr == pNetUdp)//连接删除，说明连接断开，直接返回true
+		return true;
 	
 	if( !pNetUdp->SendOut(event._nDataSize) )
 		return false;
@@ -248,28 +243,28 @@ void __stdcall IODriver::IOEvent(void *pParam)
 		 switch(Event._nIOType)
 		 {
 		 case IOS_ERROR:
-			 VERIFY(OnError(Event));
-			 break;
+			VERIFY(OnError(Event));
+			break;
 		 case IOS_CLOSE:
-			 return;
+			return;
 		 case IOS_ACCEPT:
-			 VERIFY(OnAccept(Event));
-			 break;
+			VERIFY( OnAccept(Event));
+			break;
 		 case IOS_DISCONNECT:
-			 VERIFY(OnDisConnect(Event));
-			 break;
+			VERIFY(OnDisConnect(Event));
+			break;
 		 case IOS_SEND:
-			 VERIFY(OnSendOut(Event));
-			 break;
+			VERIFY(OnSendOut(Event));
+			break;
 		 case IOS_SENDTO:
-			 VERIFY(OnSendToOut(Event));
-			 break;
+			VERIFY(OnSendToOut(Event));
+			break;
 		 case IOS_RECV:
-			  VERIFY(OnRecv(Event));
-			  break;
+			VERIFY(OnRecv(Event));
+			break;
 		 case IOS_RECVFROM:
-			  VERIFY(OnRecvFrom(Event));
-			  break;
+			VERIFY(OnRecvFrom(Event));
+			break;
 		 }
 	 }
 }
@@ -295,5 +290,29 @@ void	__stdcall IODriver::ReConncetThread(void *pParam)
 		m_NetSockPool.ReConnectTcpConnect();
 		Sleep(nReconnectGap);
 	}
+}
+
+bool IODriver::AddRecv(ShareNetSocketPtr pNetTcp)
+{
+	if(nullptr == pNetTcp) return false;
+	return AddRecv(pNetTcp.GetObj());
+}
+
+bool IODriver::AddSend(ShareNetSocketPtr pNetTcp)
+{
+	if(nullptr == pNetTcp) return false;
+	return AddSend(pNetTcp.GetObj());
+}
+
+bool IODriver::AddRecvFrom(ShareNetSocketPtr pNetUdp)
+{
+	if(nullptr == pNetUdp) return false;
+	return AddRecvFrom(pNetUdp.GetObj());
+}
+
+bool IODriver::AddSendTo(ShareNetSocketPtr pNetUdp)
+{
+	if(nullptr == pNetUdp) return false;
+	return AddSendTo(pNetUdp.GetObj());
 }
 };//namespace XZBEN

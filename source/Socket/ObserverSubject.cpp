@@ -12,6 +12,8 @@
 
 #include "ObserverSubject.h"
 #include <algorithm>
+#include "NetSocket.h"
+
 namespace XZBEN
 {
 ObserverSubject::ObserverSubject()
@@ -24,13 +26,15 @@ ObserverSubject::~ObserverSubject()
 
 }
 
-void ObserverSubject::Notify(STATUS status, NetSocket *pConnect)
+void ObserverSubject::Notify(STATUS status, ShareNetSocketPtr pConnect)
 {
 	ObserverList::iterator it, itEnd;
 	AutoLock lock(&m_mutex);
 	for(it = m_observerList.begin(), itEnd = m_observerList.end(); it != itEnd; it++)
 	{
-		(*it)->Update(status, pConnect);
+		Observer *pObserver = *it;
+		if(nullptr == pObserver) continue;
+		pObserver->Update(status, pConnect);
 	}
 }
 

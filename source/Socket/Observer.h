@@ -14,6 +14,7 @@
 #define __2013_10_27_OBSERVER_H__
 
 #include "../base/Base_system.h"
+#include "../base/SharePtr.h"
 
 namespace XZBEN
 {
@@ -24,6 +25,12 @@ enum OBServerStatus
 };
 
 class NetSocket;
+class NetTcp;
+class NetUdp;
+typedef SharePtr<NetSocket>		ShareNetSocketPtr;
+typedef SharePtr<NetTcp>		ShareNetTcpPtr;
+typedef SharePtr<NetUdp>		ShareNetUdpPtr;
+
 class Observer
 {
 public:
@@ -31,7 +38,7 @@ public:
 	Observer(){};
 	virtual ~Observer(){};
 protected:
-	virtual bool Update(STATUS status, NetSocket *pNetSocket) = 0;
+	virtual bool Update(STATUS status, ShareNetSocketPtr& pNetSocket) = 0;
 };
 
 };//namespace XZBEN

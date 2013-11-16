@@ -17,6 +17,7 @@
 #include "IODriver.h"
 #include "../Base/AllocFromMemoryPool.h"
 #include "../Base/IOBuffer.h"
+#include "../Base/SharePtr.h"
 #include <ctime>
 
 namespace XZBEN
@@ -27,14 +28,15 @@ public:
 	friend class IOCPDriver;
 	friend class IODriver;
 	friend class NetSocketPool;
-
+	friend class NetSocketUseHelper;
+	
 	NetSocket(IODriver *pDriver, bool bHeartCheck);
 	NetSocket(IODriver *pDriver, EProtocl epType, bool bHeartCheck);
 	virtual ~NetSocket();
 
 	bool	IsSending();
 	bool	IsRecving();
-
+	bool	IsOperating();
 	SOCKET	GetSocket();
 	time_t	GetLastHeart();
 	void	RefreshHeart();
@@ -48,11 +50,13 @@ public:
 	virtual bool		SendMessage(void *pBuffer, int nDataSize) = 0;
 	
 protected:
-	bool IsReady();
+	bool IsReady(); 
 	bool SetReady(bool bReady);
 	bool	NeedHeartCheck();
 	bool	AttachSocket(SOCKET sock, EProtocl epType);
-	bool	SetRecvStatus(bool bRecvStatus);
+	bool	SetRecvStatus(bool bRecving);
+	bool	SetSendStatus(bool bSending);
+	bool	SetOperatorStatus(bool bOperating);
 	virtual bool SendOut(int nLen) = 0;
 	virtual	bool RecvDone(int nLen) = 0;
 	virtual bool GetWriteAbleBuffers(void *&pBuffer, int &nBufferSize) = 0;
@@ -60,7 +64,8 @@ protected:
 	bool				 m_bIsSending;
 	bool				 m_bIsRecving;
 	bool				 m_bHeartCheck;
-	bool				 m_bReady;	
+	bool				 m_bReady;
+	bool				 m_bIsOperating;
 	Socket				 m_socket;
 	IODriver			*m_pDriver;
 	Mutex				 m_mutex;
@@ -126,5 +131,11 @@ protected:
 	bool RecvDone(int nLen)override;
 	bool SendOut(int nLen)override;
 };
-};//namespace XZBEN
+
+typedef SharePtr<NetSocket>		ShareNetSocketPtr;
+typedef SharePtr<NetTcp>		ShareNetTcpPtr;
+typedef SharePtr<NetUdp>		ShareNetUdpPtr;
+#define DELETE_SHARE_PTR(_sharePtr)	do { _sharePtr = nullptr;} while(0)
+
+}//namespace XZBEN
 #endif//__2013_10_27_NETCONNECT_H__

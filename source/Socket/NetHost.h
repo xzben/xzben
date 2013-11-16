@@ -26,8 +26,9 @@ class NetUdp;
 
 enum
 {
-	DEFAULT_HEART_GAP = 10, //默认的心跳检查间隔
-	DEFAULT_RECONNECT_GAP = 10,//默认重连间隔
+	DEFAULT_HEART_GAP = 3, //默认的心跳检查间隔
+	DEFAULT_SERVER_UDP_HEART_GAP = 2,//Server Udp 心跳间隔
+	DEFAULT_RECONNECT_GAP = 5,//默认重连间隔
 };
 
 class NetHost : public Observer
@@ -45,22 +46,22 @@ public:
 	void	ThreadLoop();//服务IO线程循环
 
 	//tcp 相关操作
-	bool	ListernTcpPort(uint16 nPort);
+	bool	ListenTcpPort(uint16 nPort);
 	SOCKET	Connect(const char* szIp, uint16 nPort, bool bAutoConnect = false);
 	bool	SendTcpMsg(SOCKET hSock, void* pBuffer, int nDataSize);
 	//udp 相关操作
-	bool	ListernUdpPort(uint16 nPort);
+	bool	ListenUdpPort(uint16 nPort);
 	bool	SendUdpMSG(const char* szIp, uint16 nPort, void* pBuffer, int len);
 	
 protected:
 	virtual bool IsReady();
 	//virtual 监视对象反馈接口
-	bool	Update(STATUS status, NetSocket* pNetSocket) override;
+	bool	Update(STATUS status, ShareNetSocketPtr& pNetSocket) override;
 private:
 	IODriver		*m_pDriver;
 	NetProtocol		*m_pProtocl;
 	bool			m_bStart;
 };
 
-};//namespace XZBEN
+}//namespace XZBEN
 #endif//__2013_10_27_NETHOST_H__

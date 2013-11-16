@@ -27,13 +27,13 @@ class NetProtocol : public Observer
 public:
 	NetProtocol();
 	virtual ~NetProtocol();
-	virtual	bool OnConnect(NetSocket *pNetSocket) =0;
-	virtual bool OnDisconnect(NetSocket *pNetSocket)=0;
-	virtual bool OnMsg(NetSocket *pNetSocket) =0;
+	virtual	bool OnConnect(ShareNetSocketPtr& pNetSocket) =0;
+	virtual bool OnDisconnect(ShareNetSocketPtr& pNetSocket)=0;
+	virtual bool OnMsg(ShareNetSocketPtr& pNetSocket) =0;
 protected:
 	//virtual
-	bool Update(STATUS status, NetSocket *pNetSocket)override;
+	bool Update(STATUS status, ShareNetSocketPtr& pNetSocket)override;
 };
 
-};//namespace XZBEN
+}//namespace XZBEN
 #endif//__YYYY_MM_DD_XXXXX_H__

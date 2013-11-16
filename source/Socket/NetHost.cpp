@@ -85,20 +85,20 @@ void NetHost::ThreadLoop()
 	m_pDriver->ThreadLoop();
 }
 
-bool NetHost::ListernTcpPort(uint16 nPort)
+bool NetHost::ListenTcpPort(uint16 nPort)
 {
 	if( !IsReady() && !m_bStart)
 		return false;
 
-	return m_pDriver->ListernTcpPort(nPort);
+	return m_pDriver->ListenTcpPort(nPort);
 }
 
-bool NetHost::ListernUdpPort(uint16 nPort)
+bool NetHost::ListenUdpPort(uint16 nPort)
 {
 	if(!IsReady() && !m_bStart)
 		return false;
 
-	return m_pDriver->ListernUdpPort(nPort);
+	return m_pDriver->ListenUdpPort(nPort);
 }
 
 SOCKET	NetHost::Connect(const char* szIp, uint16 nPort, bool bAutoConnect /*= false*/)
@@ -130,7 +130,7 @@ bool NetHost::IsReady()
 	return nullptr != m_pDriver && nullptr != m_pProtocl;
 }
 
-bool NetHost::Update(STATUS status, NetSocket* pNetSocket)
+bool NetHost::Update(STATUS status, ShareNetSocketPtr& pNetSocket)
 {
 	return true;
 }

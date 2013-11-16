@@ -30,44 +30,12 @@ void NetSocketPool::ClearPool()
 {
 	AutoLock lock(&m_mutex);
 	//TcpConnect
-	NetTcpMap::iterator itTcpConnect = m_mpTcpConnect.begin();
-	while(itTcpConnect != m_mpTcpConnect.end())
-	{
-		NetTcp *pNetTcp = itTcpConnect->second;
-		SAFE_DELETE(pNetTcp);
-		itTcpConnect++;
-	}
-	//TcpDisconnect
-	NetTcpMap::iterator itTcpDisConnect = m_mpTcpDisconnect.begin();
-	while(itTcpDisConnect != m_mpTcpDisconnect.end())
-	{
-		NetTcp *pNetTcp = itTcpDisConnect->second;
-		SAFE_DELETE(pNetTcp);
-		itTcpDisConnect++;
-	}
-	//Udp
-	NetUdpMap::iterator itNetUdp = m_mpNetUdp.begin();
-	while(itNetUdp != m_mpNetUdp.end())
-	{
-		NetUdp *pNetUdp = itNetUdp->second;
-		SAFE_DELETE(pNetUdp);
-		itNetUdp++;
-	}
-	//UdpWait
-	WaitNetServerUdpList::iterator itWaitUdp = m_mpWaitNetServrUdp.begin();
-	while(itWaitUdp != m_mpWaitNetServrUdp.end())
-	{
-		NetUdp *pNetUdp = *itWaitUdp;
-		SAFE_DELETE(pNetUdp);
-		itWaitUdp++;
-	}
 	m_mpTcpConnect.clear();
 	m_mpTcpDisconnect.clear();
 	m_mpNetUdp.clear();
-	m_mpWaitNetServrUdp.clear();
 }
 
-NetTcp*	NetSocketPool::FindNetTcp(SOCKET nID)
+ShareNetTcpPtr	NetSocketPool::FindNetTcp(SOCKET nID)
 {
 	AutoLock lock(&m_mutex);
 
@@ -78,7 +46,7 @@ NetTcp*	NetSocketPool::FindNetTcp(SOCKET nID)
 	return it->second;
 }
 
-bool NetSocketPool::AddNetTcp(NetTcp *pNetTcp)
+bool NetSocketPool::AddNetTcp(ShareNetTcpPtr& pNetTcp)
 {
 	if(nullptr == pNetTcp) 
 		return false;
@@ -101,7 +69,7 @@ bool NetSocketPool::DelNetTcp(SOCKET nID)
 	if(it == m_mpTcpConnect.end())
 		return false;
 	
-	NetTcp* pNetTcp = it->second;
+	ShareNetTcpPtr& pNetTcp = it->second;
 
 	assert(nullptr != pNetTcp);
 	if(nullptr == pNetTcp)
@@ -110,14 +78,14 @@ bool NetSocketPool::DelNetTcp(SOCKET nID)
 	if( pNetTcp->NeedAutoReConnect() )
 		AddDisNetTcp(pNetTcp);
 	else
-		SAFE_DELETE(pNetTcp);
+		DELETE_SHARE_PTR(pNetTcp);
 
 	m_mpTcpConnect.erase(it);
 	
 	return true;
 }
 
-bool NetSocketPool::DelNetTcp(NetTcp *pNetTcp)
+bool NetSocketPool::DelNetTcp(ShareNetTcpPtr& pNetTcp)
 {
 	if(nullptr == pNetTcp) 
 		return false;
@@ -127,7 +95,7 @@ bool NetSocketPool::DelNetTcp(NetTcp *pNetTcp)
 	return DelNetTcp(nID);
 }
 
-NetUdp*	NetSocketPool::FindNetUdp(SOCKET nID)
+ShareNetUdpPtr	NetSocketPool::FindNetUdp(SOCKET nID)
 {
 	AutoLock lock(&m_mutex);
 
@@ -138,7 +106,7 @@ NetUdp*	NetSocketPool::FindNetUdp(SOCKET nID)
 	return it->second;
 }
 
-bool NetSocketPool::AddNetUdp(NetUdp *pNetUdp)
+bool NetSocketPool::AddNetUdp(ShareNetUdpPtr& pNetUdp)
 {
 	if(nullptr == pNetUdp) 
 		return false;
@@ -146,14 +114,15 @@ bool NetSocketPool::AddNetUdp(NetUdp *pNetUdp)
 	int nID = pNetUdp->GetID();
 
 	if(nullptr != FindNetUdp(nID)) 
+	{
 		return false;
-
+	}
 	AutoLock lock(&m_mutex);
 	m_mpNetUdp.insert(NetUdpMap::value_type(nID, pNetUdp));
 	return true;
 }
 
-bool NetSocketPool::AddDisNetTcp(NetTcp *pNetTcp)
+bool NetSocketPool::AddDisNetTcp(ShareNetTcpPtr& pNetTcp)
 {
 	if(nullptr == pNetTcp)
 		return false;
@@ -166,7 +135,7 @@ bool NetSocketPool::AddDisNetTcp(NetTcp *pNetTcp)
 	return true;
 }
 
-bool NetSocketPool::DelDisNetTcp(NetTcp *pNetTcp)
+bool NetSocketPool::DelDisNetTcp(ShareNetTcpPtr& pNetTcp)
 {
 	if(nullptr == pNetTcp)
 		return false;
@@ -179,46 +148,30 @@ bool NetSocketPool::DelDisNetTcp(NetTcp *pNetTcp)
 	m_mpTcpDisconnect.erase(it);
 	return true;
 }
-bool NetSocketPool::DelNetUdp(SOCKET nID, bool bDel /*= true*/)
+bool NetSocketPool::DelNetUdp(SOCKET nID)
 {
 	AutoLock lock(&m_mutex);
 
 	NetUdpMap::iterator it = m_mpNetUdp.find(nID);
 	if(it != m_mpNetUdp.end())
 	{
-		NetUdp* pNetUdp = it->second;
-		if(bDel)  SAFE_DELETE(pNetUdp);
+		ShareNetUdpPtr& pNetUdp = it->second;
+		DELETE_SHARE_PTR(pNetUdp);
 		m_mpNetUdp.erase(it);
 		return true;
 	}
 	return false;
 }
-bool NetSocketPool::DelNetUdp(NetUdp *pNetUdp, bool bDel /*= true*/)
+bool NetSocketPool::DelNetUdp(ShareNetUdpPtr& pNetUdp)
 {
 	if(nullptr == pNetUdp) 
 		return false;
 
 	int nID = pNetUdp->GetID();
 
-	return DelNetUdp(nID, bDel);
+	return DelNetUdp(nID);
 }
-bool NetSocketPool::SwapNetUdp(NetUdp *pNetUdp)
-{
-	if(nullptr == pNetUdp)
-		return false;
 
-	SOCKET nId = pNetUdp->GetID();
-	NetUdp *pOldNetUdp = FindNetUdp(nId);
-	if(nullptr == pOldNetUdp)  return false;
-
-	DelNetUdp(nId, false);
-	AddNetUdp(pNetUdp);
-
-	AutoLock lock(&m_mutex);
-	m_mpWaitNetServrUdp.push_back(pOldNetUdp);
-
-	return true;
-}
 bool NetSocketPool::CheckTcpHeart(int16 nSecond)
 {
 	if(nSecond <= 0) return false;
@@ -229,12 +182,12 @@ bool NetSocketPool::CheckTcpHeart(int16 nSecond)
 	time_t CurTime = time(NULL);
 	while( it != m_mpTcpConnect.end() )
 	{
-		NetTcp *pNetTcp = it->second;
+		ShareNetTcpPtr& pNetTcp = it->second;
 		time_t LastHeart = pNetTcp->GetLastHeart();
 
 		if( pNetTcp->NeedHeartCheck() && CurTime - LastHeart > nSecond)
 		{
-			SAFE_DELETE(pNetTcp);
+			DELETE_SHARE_PTR(pNetTcp);
 			it = m_mpTcpConnect.erase(it);
 			continue;
 		}
@@ -246,13 +199,13 @@ bool NetSocketPool::CheckTcpHeart(int16 nSecond)
 bool NetSocketPool::CheckUdpHeart(int16 nSecond)
 {
 	if(nSecond <= 0) return false;
-	
+
 	AutoLock lock(&m_mutex);
 	NetUdpMap::iterator it = m_mpNetUdp.begin();
 	time_t CurTime = time(NULL);
 	while( it != m_mpNetUdp.end() )
 	{
-		NetUdp *pNetUdp = it->second;
+		ShareNetUdpPtr& pNetUdp = it->second;
 		if(nullptr == pNetUdp)
 		{
 			it++;
@@ -262,7 +215,7 @@ bool NetSocketPool::CheckUdpHeart(int16 nSecond)
 
 		if( pNetUdp->NeedHeartCheck() && CurTime - LastHeart > nSecond)
 		{
-			SAFE_DELETE(pNetUdp);
+			DELETE_SHARE_PTR(pNetUdp);
 			it = m_mpNetUdp.erase(it);
 			continue;
 		}
@@ -270,26 +223,6 @@ bool NetSocketPool::CheckUdpHeart(int16 nSecond)
 		it++;
 	}
 
-	WaitNetServerUdpList::iterator itServerUdp = m_mpWaitNetServrUdp.begin();
-	while(itServerUdp != m_mpWaitNetServrUdp.end())
-	{	
-		NetUdp *pNetUdp = *itServerUdp;
-		if(nullptr == pNetUdp)
-		{
-			itServerUdp++;
-			continue;
-		}
-		time_t LastHeart = pNetUdp->GetLastHeart();
-		if( pNetUdp->NeedHeartCheck() && CurTime - LastHeart > nSecond)
-		{
-			SAFE_DELETE(pNetUdp);
-			m_mpWaitNetServrUdp.erase(itServerUdp);
-			itServerUdp = m_mpWaitNetServrUdp.begin();
-			continue;
-		}
-
-		itServerUdp++;
-	}
 	return true;
 }
 bool NetSocketPool::ReConnectTcpConnect()
@@ -300,7 +233,7 @@ bool NetSocketPool::ReConnectTcpConnect()
 
 	while( itTemp != m_mpTcpDisconnect.end() )
 	{
-		NetTcp* pNetTcp = itTemp->second;
+		ShareNetTcpPtr& pNetTcp = itTemp->second;
 		if(nullptr == pNetTcp)
 		{
 			assert(false);

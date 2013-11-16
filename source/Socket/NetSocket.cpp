@@ -20,6 +20,7 @@ NetSocket::NetSocket(IODriver *pDriver, bool bHeartCheck)
 {
 	m_bIsSending = false;
 	m_bIsRecving = false;
+	m_bIsOperating = false;
 	RefreshHeart();
 }
 NetSocket::NetSocket(IODriver *pDriver, EProtocl epType, bool bHeartCheck)
@@ -27,6 +28,7 @@ NetSocket::NetSocket(IODriver *pDriver, EProtocl epType, bool bHeartCheck)
 {
 	m_bIsSending = false;
 	m_bIsRecving = false;
+	m_bIsOperating = false;
 	RefreshHeart();
 }
 
@@ -39,7 +41,11 @@ SOCKET NetSocket::GetSocket()
 	AutoLock lock(&m_mutex);
 	return m_socket.GetSocket();
 }
-
+bool NetSocket::NeedHeartCheck()
+{
+	AutoLock lock(&m_mutex);
+	return m_bHeartCheck && !m_bIsOperating;
+}
 bool NetSocket::IsSending()
 {
 	AutoLock lock(&m_mutex);
@@ -50,6 +56,12 @@ bool NetSocket::IsRecving()
 {
 	AutoLock lock(&m_mutex);
 	return m_bIsRecving;
+}
+
+bool NetSocket::IsOperating()
+{
+	AutoLock lock(&m_mutex);
+	return m_bIsOperating;
 }
 
 bool NetSocket::GetLocalAddr(std::string& strIp, uint16& nPort)
@@ -81,11 +93,6 @@ void NetSocket::RefreshHeart()
 	AutoLock lock(&m_mutex);
 	m_tmLastHeart = time(NULL);
 }
-bool NetSocket::NeedHeartCheck()
-{
-	AutoLock lock(&m_mutex);
-	return m_bHeartCheck;
-}
 
 bool NetSocket::GetSendBuffer(void *&pBuffer, int &nLen)
 {
@@ -100,11 +107,28 @@ int NetSocket::ReadMsg(void *pBuffer, int nDataSize, bool bDel /* = true */)
 	RefreshHeart();
 	return m_RecvBuffer.ReadData(pBuffer, nDataSize, bDel);
 }
-bool NetSocket::SetRecvStatus(bool bRecvStatus)
+bool NetSocket::SetRecvStatus(bool bRecving)
 {
 	AutoLock lock(&m_mutex);
-	m_bIsRecving = bRecvStatus;
-	return bRecvStatus;
+	bool bOldStatus = m_bIsRecving;
+	m_bIsRecving = bRecving;
+	return bOldStatus;
+}
+
+bool NetSocket::SetSendStatus(bool bSending)
+{
+	AutoLock lock(&m_mutex);
+	bool bOldStatus = m_bIsSending;
+	m_bIsSending = bSending;
+	return bOldStatus;
+}
+
+bool NetSocket::SetOperatorStatus(bool bOperating)
+{
+	AutoLock lock(&m_mutex);
+	bool bOldStatus = m_bIsOperating;
+	m_bIsOperating = bOperating;
+	return bOldStatus;
 }
 bool NetSocket::IsReady()
 {
@@ -119,6 +143,7 @@ bool NetSocket::SetReady(bool bReady)
 	m_bReady = bReady;
 	return bOld;
 }
+
 //////////////////////////////////////////////////////////////////////////
 //NetTcp
 NetTcp::NetTcp(IODriver *pDriver, bool bAutoConnect /* = false */, bool bHeartCheck /*= false*/)
@@ -305,7 +330,7 @@ bool NetUdp::GetWriteAbleBuffers(void *&pBuffer, int &nBufferSize)
 NetServerUdp::NetServerUdp(IODriver *pDriver, SOCKET sock)
 	:NetUdp(pDriver, sock, false)
 {
-	m_socket.SetCloseSocket(true);
+
 }
 
 NetServerUdp::~NetServerUdp()
@@ -318,25 +343,33 @@ bool NetServerUdp::RecvDone(int nLen)
 	RefreshHeart();
 	AutoLock lock(&m_mutex);
 	m_bHeartCheck = true;
+
 	bool bRet = (-nLen == m_RecvBuffer.WriteData(nullptr, nLen));
 	m_bIsRecving = false;
 
-	NetUdp *pNetUdp = new NetServerUdp(m_pDriver, m_socket.GetSocket());
-	
-	if(!m_pDriver->m_NetSockPool.SwapNetUdp(pNetUdp) 
-	 ||!m_pDriver->AddRecvFrom(pNetUdp) )
+	std::string strIp; uint16 nPort;
+	GetLocalAddr(strIp, nPort);
+	Socket sock(UDP);
+	if( !sock.SetReuseAddr() || !sock.StartServer(UDP, nPort))
 		return false;
 
-	m_bIsRecving = true;
+	SOCKET hSock = sock.Dettach();
+	ShareNetUdpPtr pNetUdp = new NetServerUdp(m_pDriver, hSock);
+	if(!m_pDriver->AddMonitor(hSock)
+	|| !m_pDriver->AddRecvFrom(pNetUdp)
+	|| !m_pDriver->m_NetSockPool.AddNetUdp(pNetUdp))
+	{
+		DELETE_SHARE_PTR(pNetUdp);
+		return false;
+	}
 
 	return bRet;
 }
 
 bool NetServerUdp::SendOut(int nLen)
 {
-	//NetServerUdp 不需要处理SendOut。
-	//因为它在RecvFrom后转变成普通Udp只有一次，send的机会
-	//至于它的删除工作会在心跳检查中执行
+	AutoLock lock(&m_mutex);
+	m_pDriver->m_NetSockPool.DelNetUdp(GetID());
 	return true;
 }
 };//namespace XZBEN

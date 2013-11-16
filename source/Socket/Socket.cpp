@@ -348,5 +348,5 @@ bool Socket::SetCloseSocket(bool bNoCloseSocket)
 
 	return bOldValue;
 }
-};//namespace XZBEN
+}//namespace XZBEN
 

@@ -7,7 +7,7 @@ using namespace XZBEN;
 class ClientProtocol : public NetProtocol
 {
 private:
-	bool OnConnect(NetSocket *pNetSocket)
+	bool OnConnect(ShareNetSocketPtr& pNetSocket)
 	{
 		std::string strIp; uint16 nPort;
 		pNetSocket->GetPeertAddr(strIp, nPort);
@@ -15,7 +15,7 @@ private:
 		Print(GlobalFunction::Format("Connect Ip: %s --- Port: %d", strIp.c_str(), nPort));
 		return true;
 	}
-	bool OnDisconnect(NetSocket *pNetSocket)
+	bool OnDisconnect(ShareNetSocketPtr& pNetSocket)
 	{
 		std::string strIp; uint16 nPort;
 		pNetSocket->GetPeertAddr(strIp, nPort);
@@ -23,7 +23,7 @@ private:
 		Print(GlobalFunction::Format("Disconnect Ip: %s --- Port: %d", strIp.c_str(), nPort));
 		return true;
 	}
-	bool OnMsg(NetSocket *pNetSocket)
+	bool OnMsg(ShareNetSocketPtr& pNetSocket)
 	{
 		char buffer[1024];
 		static int nTimes = 1;
@@ -52,12 +52,12 @@ int main()
 	host.SetupDriver(new IOCPDriver);
 	host.SetupProtocol(new ClientProtocol);
 	host.StartServer(1);
-	/* TCP
+	///* TCP
 	SOCKET hSocket = host.Connect("127.0.0.1", 6000);
 	host.SendTcpMsg(hSocket, "TestBuffer", strlen("TestBuffer")+1);
-	*/
+	//*/
 	
-	///*UDP
+	/*UDP
 	host.SendUdpMSG("127.0.0.1",6001, "TestBuffer", strlen("TestBuffer")+1);
 	//*/
 	host.ThreadLoop();

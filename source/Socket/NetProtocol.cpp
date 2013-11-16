@@ -25,7 +25,7 @@ NetProtocol::~NetProtocol()
 
 }
 
-bool NetProtocol::Update(STATUS status, NetSocket *pNetSocket)
+bool NetProtocol::Update(STATUS status, ShareNetSocketPtr& pNetSocket)
 {
 	switch(status)
 	{

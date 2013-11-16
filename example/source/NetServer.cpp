@@ -8,7 +8,7 @@ using namespace XZBEN;
 class TestProtocol : public NetProtocol
 {
 private:
-	bool OnConnect(NetSocket *pNetSocket)
+	bool OnConnect(ShareNetSocketPtr& pNetSocket)
 	{
 		std::string strIp; uint16 nPort;
 		pNetSocket->GetPeertAddr(strIp, nPort);
@@ -16,7 +16,7 @@ private:
 		Print(GlobalFunction::Format("Connect Ip: %s --- Port: %d", strIp.c_str(), nPort));
 		return true;
 	}
-	bool OnDisconnect(NetSocket *pNetSocket)
+	bool OnDisconnect(ShareNetSocketPtr& pNetSocket)
 	{
 		std::string strIp; uint16 nPort;
 		pNetSocket->GetPeertAddr(strIp, nPort);
@@ -24,7 +24,7 @@ private:
 		Print(GlobalFunction::Format("Disconnect Ip: %s --- Port: %d", strIp.c_str(), nPort));
 		return true;
 	}
-	bool OnMsg(NetSocket *pNetSocket)
+	bool OnMsg(ShareNetSocketPtr& pNetSocket)
 	{
 		char buffer[1024];
 		static int nTimes = 1;
@@ -36,7 +36,7 @@ private:
 			Print(GlobalFunction::Format("%d: OnMsg DataSize :%d Content: %s",nTimes++, nDataSize, buffer));
 			pNetSocket->SendMessage(buffer, nReadSize);
 		}
-		
+		//Sleep(10000);
 		return true;
 	}
 private:
@@ -51,7 +51,8 @@ int main()
 {
 	NetHost *pHost = new NetHost(new IOCPDriver, new TestProtocol);
 	pHost->StartServer();
-	pHost->ListernUdpPort(6001);
+	pHost->ListenTcpPort(6000);
+	pHost->ListenUdpPort(6001);
 	pHost->ThreadLoop();
 	return 0;
 }

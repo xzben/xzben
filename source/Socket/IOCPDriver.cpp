@@ -12,6 +12,7 @@
 
 #include "IOCPDriver.h"
 #include "NetSocket.h"
+#include "../Base/AllocFromMemoryPool.h"
 
 namespace XZBEN
 {
@@ -76,7 +77,11 @@ bool IOCPDriver::AddRecvFrom(NetSocket *pNetUdp)
 	if( !pNetUdp->GetWriteAbleBuffers(pBuffer, nBufferSize) )
 		return false;
 
-	return AddRecvFrom(sock, pBuffer, nBufferSize);
+	if( !AddRecvFrom(sock, pBuffer, nBufferSize) )
+		return false;
+
+	pNetUdp->SetRecvStatus(true);
+	return true;
 }
 
 uint16 IOCPDriver::GetBestThreadNumber()
@@ -342,14 +347,15 @@ bool IOCPDriver::WaitEvent(IO_EVENT &event)
 	return true;
 }
 
-IOCPDriver::IOCP_OVERLAPPED* IOCPDriver::CreateOverlapped()
+IOCP_OVERLAPPED* IOCPDriver::CreateOverlapped()
 {
-	return new IOCP_OVERLAPPED;
+	return new ((IOCP_OVERLAPPED*)MemoryPoolManager::Single()->GetMemoryPool(MPID_SOCK)->Alloc(sizeof(IOCP_OVERLAPPED))) IOCP_OVERLAPPED;
 }
 
-void IOCPDriver::DeleteOverlapped(IOCPDriver::IOCP_OVERLAPPED* &pDel)
+void IOCPDriver::DeleteOverlapped(IOCP_OVERLAPPED* &pDel)
 {
-	SAFE_DELETE(pDel);
+	MemoryPoolManager::Single()->GetMemoryPool(MPID_SOCK)->Free(pDel);
+	pDel = nullptr;
 }
 
 };//namespace XZBEN
