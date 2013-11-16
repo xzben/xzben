@@ -19,7 +19,7 @@ namespace XZBEN
 {
 #ifndef XZBEN_BASE_MACROS
 	#define XZBEN_BASE_MACROS
-	#define SAFE_DELETE(_ptr)   if(nullptr != _ptr){ delete _ptr; _ptr = nullptr; }
+	#define SAFE_DELETE(_ptr)   if(nullptr != _ptr){ delete _ptr; _ptr = nullptr; }		
 #ifdef _DEBUG
 	#define VERIFY(_express)	assert(_express)
 #else

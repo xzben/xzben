@@ -31,12 +31,14 @@ public:
 	friend bool operator==(const SharePtr<Obj>& rSharePtr, void *pObj);
 	template<typename Obj>
 	friend bool operator!=(const SharePtr<Obj>& rSharePtr, void *pObj);
+
+	friend class SharePtr;
 public:
-	SharePtr(void* pObj = NULL)
+	SharePtr(void* pObj = nullptr)
 	{
-		if(NULL == pObj) 
+		if(nullptr == pObj) 
 		{
-			m_pnUseCount = NULL;
+			m_pnUseCount = nullptr;
 			m_bReleased = true;
 		}
 		else
@@ -46,9 +48,20 @@ public:
 		}
 		m_pObj = static_cast<Obj*>(pObj);
 	}
+	template<typename ObjTwo>
+	SharePtr(const SharePtr<ObjTwo>& rsharePtr)
+	{
+		if(rsharePtr != nullptr)
+			Atom::AtomAdd(rsharePtr.m_pnUseCount, 1);
+
+		m_pnUseCount = rsharePtr.m_pnUseCount;
+		m_pObj = rsharePtr.m_pObj;
+		m_bReleased = rsharePtr.m_bReleased;
+	}
+
 	SharePtr(const SharePtr& rSharePtr)
 	{
-		if(rSharePtr != NULL)
+		if(rSharePtr != nullptr)
 			Atom::AtomAdd(rSharePtr.m_pnUseCount, 1);
 
 		m_pnUseCount = rSharePtr.m_pnUseCount;
@@ -63,21 +76,21 @@ public:
 		{
 			delete m_pObj;
 			delete m_pnUseCount;
-			m_pnUseCount = NULL;
+			m_pnUseCount = nullptr;
 		}
-		m_pObj = NULL;
+		m_pObj = nullptr;
 		m_bReleased = true;
 	}
 	~SharePtr()
 	{
 		Release();
 	}
-
-	SharePtr<Obj>& operator=(const SharePtr& sharePtr)
+	template<typename ObjOne, typename ObjTwo>
+	SharePtr<ObjOne>& operator=(const SharePtr<ObjTwo>& rsharePtr)
 	{
-		if(*this == sharePtr) return *this;
+		if(*this == rsharePtr) return *this;
 		Release();
-		if(sharePtr != NULL)
+		if(sharePtr != nullptr)
 			Atom::AtomAdd(sharePtr.m_pnUseCount, 1);
 
 		m_pnUseCount = sharePtr.m_pnUseCount;
@@ -85,12 +98,24 @@ public:
 		m_bReleased = sharePtr.m_bReleased;
 		return *this;
 	}
+	SharePtr<Obj>& operator=(const SharePtr& rsharePtr)
+	{
+		if(*this == rsharePtr) return *this;
+		Release();
+		if(rsharePtr != nullptr)
+			Atom::AtomAdd(rsharePtr.m_pnUseCount, 1);
+
+		m_pnUseCount = rsharePtr.m_pnUseCount;
+		m_pObj = rsharePtr.m_pObj;
+		m_bReleased = rsharePtr.m_bReleased;
+		return *this;
+	}
 
 	SharePtr<Obj>& operator=(void *pObj)
 	{
 		if(*this == pObj) return *this;
 		Release();
-		if(NULL == pObj)
+		if(nullptr == pObj)
 		{
 			return *this;
 		}
@@ -103,25 +128,25 @@ public:
 
 	Obj* operator->()
 	{
-		assert(NULL != m_pObj);
+		assert(nullptr != m_pObj);
 		return m_pObj;
 	}
 
 	const Obj* operator->()const
 	{
-		assert(NULL != m_pObj);
+		assert(nullptr != m_pObj);
 		return m_pObj;
 	}
 
 	Obj& operator*()
 	{
-		assert(NULL != m_pObj);
+		assert(nullptr != m_pObj);
 		return *m_pObj;
 	}
 
 	const Obj& operator*()const
 	{
-		assert(NULL != m_pObj);
+		assert(nullptr != m_pObj);
 		return *m_pObj;
 	}
 	bool operator==(const SharePtr<Obj> &sharePtr)const
@@ -132,6 +157,16 @@ public:
 	bool operator!=(const SharePtr<Obj> &sharePtr)const
 	{
 		return (m_pObj != sharePtr.m_pObj);
+	}
+	const Obj* GetObj()const
+	{
+		assert(nullptr != m_pObj);
+		return m_pObj;
+	}
+	Obj*	GetObj()
+	{
+		assert(nullptr != m_pObj);
+		return m_pObj;
 	}
 private:
 	int		*m_pnUseCount;

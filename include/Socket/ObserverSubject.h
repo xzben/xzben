@@ -27,7 +27,7 @@ public:
 	ObserverSubject();
 	virtual ~ObserverSubject();
 
-	void Notify(STATUS	status, NetSocket* pConnect);
+	void Notify(STATUS	status, ShareNetSocketPtr pConnect);
 	bool Attach(Observer *pObj);
 	bool Dettach(Observer *pObj);
 private:

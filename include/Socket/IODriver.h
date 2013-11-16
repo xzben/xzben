@@ -64,17 +64,17 @@ public:
 	void	ThreadLoop(); //IO 线程循环
 
 	//tcp
-	bool	ListernTcpPort(uint16 nPort);
+	bool	ListenTcpPort(uint16 nPort);
 	SOCKET	Connect(const char* szIp, uint16 nPort, bool bAutoConnect);
 	bool	SendTcpMSG(SOCKET hSocket, void *pBuffer, int nDataSize);
 	
 	//udp
-	bool	ListernUdpPort(uint16 nPort);
+	bool	ListenUdpPort(uint16 nPort);
 	bool	SendUdpMSG(const char* szIp, uint16 nPort, void *pBuffer, int nLen);
 	
 private:
 	//端口nPort是否已经被监听
-	bool	IsListernPort(uint16 nPort);
+	bool	IsListenPort(uint16 nPort);
 	//将端口加入监听列表
 	bool	AddListenPort(uint16 nPort);
 	//IO操作线程过程
@@ -83,11 +83,7 @@ private:
 	void	__stdcall HeartThread(void *pParam);
 	//重连处理线程过程
 	void	__stdcall ReConncetThread(void *pParam);
-	
-protected:
-	bool	AddRecvFrom(SOCKET	sock);
-	bool	AddTcpMonitor(SOCKET sock);
-	bool	AddUdpMonitor(SOCKET sock);
+
 protected:
 //virtual 根据具体Driver实现的
 	//获取Driver对应的最合适线程数
@@ -97,10 +93,14 @@ protected:
 	virtual bool	AddMonitor(SOCKET sock) = 0;
 	//tcp
 	virtual bool	AddAccept(SOCKET listenSock) = 0;
+	bool			AddSend(ShareNetSocketPtr pNetTcp);
 	virtual bool	AddSend(NetSocket *pNetTcp) = 0;
+	bool			AddRecv(ShareNetSocketPtr pNetTcp);
 	virtual bool	AddRecv(NetSocket *pNetTcp) = 0;
 	//udp
+	bool			AddSendTo(ShareNetSocketPtr pNetUdp);
 	virtual bool    AddSendTo(NetSocket *pNetUdp) = 0;
+	bool			AddRecvFrom(ShareNetSocketPtr pNetUdp);
 	virtual bool    AddRecvFrom(NetSocket *pNetUdp) = 0;
 private:
 	//各种IO事件的对应处理借口
@@ -121,5 +121,5 @@ private:
 	bool			m_bIsRun;			//Driver是否运行
 };
 
-};//namespace XZBEN
+}//namespace XZBEN
 #endif//__2013_10_27_IODRIVER_H__
