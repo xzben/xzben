@@ -93,7 +93,6 @@ Socket::Socket()
 	m_hSocket = INVALID_SOCKET;
 	m_Protocl = EPUNKNOW;
 	m_bHaveAddr = false;
-	m_bNoCloseSocket = false;
 	memset(&m_addrPeer, 0, sizeof(m_addrPeer));
 }
 Socket::Socket(const EProtocl epType, const int nAf /*= AF_INET*/, const int nProtocl /*= 0*/)
@@ -101,13 +100,12 @@ Socket::Socket(const EProtocl epType, const int nAf /*= AF_INET*/, const int nPr
 	m_hSocket = ::socket(nAf, epType, nProtocl);
 	m_Protocl = epType;
 	m_bHaveAddr = false;
-	m_bNoCloseSocket = false;
 	memset(&m_addrPeer, 0, sizeof(m_addrPeer));
 }
 
 Socket::~Socket()
 {
-	if(!m_bNoCloseSocket) Close();
+	 Close();
 }
 
 bool Socket::Attach(SOCKET hSocket, EProtocl epType)
@@ -341,12 +339,5 @@ bool Socket::Shutdown(int how)
 	return 0 == shutdown(m_hSocket, how);
 }
 
-bool Socket::SetCloseSocket(bool bNoCloseSocket)
-{
-	bool bOldValue = m_bNoCloseSocket;
-	m_bNoCloseSocket = bNoCloseSocket;
-
-	return bOldValue;
-}
 }//namespace XZBEN
 

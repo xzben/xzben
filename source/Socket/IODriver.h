@@ -59,6 +59,12 @@ public:
 	virtual ~IODriver();
 	
 	//启动/停止 服务
+	/*
+	*	启动IO服务
+	*	@para	nThreadNum:	IO处理线程数目，默认为2*cpu+2
+	*	@para	bHeartCheck:	是否需要心跳检查
+	*	@para	nHeartGap:	当bHeartCheck为true时有效，为心跳间隔（单位秒）
+	*/
 	bool	Start(int nThreadNum = -1, bool bHeartCheck = false, int16 nHeartGap = DEFAULT_HEART_GAP);
 	void	Stop();
 	void	ThreadLoop(); //IO 线程循环

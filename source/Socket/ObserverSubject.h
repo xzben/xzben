@@ -21,6 +21,9 @@
 namespace XZBEN
 {
 typedef	std::list<Observer*>		ObserverList;
+/*
+*	观察模式 被观察对象基类
+*/
 class ObserverSubject
 {
 public:

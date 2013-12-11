@@ -17,7 +17,9 @@
 
 namespace XZBEN
 {
-
+/*
+*	此类用来是被继承用，是子类是从 指定内存池中分配内存
+*/
 template<int MemoryPoolID>
 class AllocFromMemoryPool
 {

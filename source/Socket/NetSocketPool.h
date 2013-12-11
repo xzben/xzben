@@ -30,6 +30,10 @@ typedef SharePtr<NetUdp>		ShareNetUdpPtr;
 
 typedef std::map<SOCKET, ShareNetTcpPtr>	NetTcpMap;
 typedef std::map<SOCKET, ShareNetUdpPtr>	NetUdpMap;
+
+/*
+*
+*/
 class NetSocketPool
 {
 public:

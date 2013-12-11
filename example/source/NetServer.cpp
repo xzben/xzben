@@ -47,6 +47,7 @@ private:
 	}
 	Mutex m_mutex;
 };
+
 int main()
 {
 	NetHost *pHost = new NetHost(new IOCPDriver, new TestProtocol);
