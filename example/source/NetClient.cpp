@@ -29,7 +29,7 @@ private:
 		static int nTimes = 1;
 		int nDataSize = pNetSocket->GetDataSize();
 		int nReadSize;
-		if( (nReadSize = pNetSocket->ReadMsg(buffer, 500)) > 0 )
+		if( (nReadSize = pNetSocket->ReadMsg(buffer, 1024)) > 0 )
 		{
 			buffer[nReadSize] = '\0';
 			Print(GlobalFunction::Format("%d: OnMsg DataSize :%d Content: %s",nTimes++, nDataSize, buffer));
@@ -52,14 +52,8 @@ int main()
 	host.SetupDriver(new IOCPDriver);
 	host.SetupProtocol(new ClientProtocol);
 	host.StartServer(1);
-	///* TCP
 	SOCKET hSocket = host.Connect("127.0.0.1", 6000);
 	host.SendTcpMsg(hSocket, "TestBuffer", strlen("TestBuffer")+1);
-	//*/
-	
-	/*UDP
-	host.SendUdpMSG("127.0.0.1",6001, "TestBuffer", strlen("TestBuffer")+1);
-	//*/
 	host.ThreadLoop();
 	return 0;
 }

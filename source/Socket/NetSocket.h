@@ -34,22 +34,22 @@ public:
 	NetSocket(IODriver *pDriver, EProtocl epType, bool bHeartCheck);
 	virtual ~NetSocket();
 
-	bool	IsSending();
-	bool	IsRecving();
-	bool	IsOperating();
 	SOCKET	GetSocket();
-	time_t	GetLastHeart();
-	void	RefreshHeart();
 	bool GetLocalAddr(std::string& strIp, uint16& nPort);
 	bool GetPeertAddr(std::string& strIp, uint16& nPort);
-	bool GetSendBuffer(void *&pBuffer, int &nLen);
+
 	int	 GetDataSize();
 	int	 ReadMsg(void *pBuffer, int nDataSize, bool bDel = true);
 	virtual int			GetID() { return GetSocket(); };
 	virtual EProtocl	GetType() = 0;
 	virtual bool		SendMessage(void *pBuffer, int nDataSize) = 0;
-	
 protected:
+	bool GetSendBuffer(void *&pBuffer, int &nLen);
+	time_t	GetLastHeart();
+	void	RefreshHeart();
+	bool	IsSending();
+	bool	IsRecving();
+	bool	IsOperating();
 	bool IsReady(); 
 	bool SetReady(bool bReady);
 	bool	NeedHeartCheck();

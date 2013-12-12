@@ -30,13 +30,12 @@ private:
 		static int nTimes = 1;
 		int nDataSize = pNetSocket->GetDataSize();
 		int nReadSize;
-		if( (nReadSize = pNetSocket->ReadMsg(buffer, 500)) > 0 )
+		if( (nReadSize = pNetSocket->ReadMsg(buffer, 1024)) > 0 )
 		{
 			buffer[nReadSize] = '\0';
 			Print(GlobalFunction::Format("%d: OnMsg DataSize :%d Content: %s",nTimes++, nDataSize, buffer));
 			pNetSocket->SendMessage(buffer, nReadSize);
 		}
-		//Sleep(10000);
 		return true;
 	}
 private:
@@ -53,7 +52,6 @@ int main()
 	NetHost *pHost = new NetHost(new IOCPDriver, new TestProtocol);
 	pHost->StartServer();
 	pHost->ListenTcpPort(6000);
-	pHost->ListenUdpPort(6001);
 	pHost->ThreadLoop();
 	return 0;
 }

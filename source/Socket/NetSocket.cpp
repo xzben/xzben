@@ -248,7 +248,7 @@ bool NetTcp::CreateConnect(SOCKET hSocket)
 }
 bool NetTcp::GetWriteAbleBuffers(void *&pBuffer, int &nBufferSize)
 {
-	return m_RecvBuffer.GetEmptyBuffer(pBuffer, nBufferSize);
+	return m_RecvBuffer.GetEmptyBuffer(pBuffer, nBufferSize, true);
 }
 //////////////////////////////////////////////////////////////////////////
 //NetUdp

@@ -1,19 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Base", "Base\Base.vcxproj", "{FADEC7C5-F0CC-4982-B443-FF823AD4272D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XZBEN", "Base\Base.vcxproj", "{FADEC7C5-F0CC-4982-B443-FF823AD4272D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
+		English|Any CPU = English|Any CPU
+		English|Mixed Platforms = English|Mixed Platforms
 		English|Win32 = English|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Debug|Win32.Build.0 = Debug|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.English|Any CPU.ActiveCfg = English|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.English|Mixed Platforms.ActiveCfg = English|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.English|Mixed Platforms.Build.0 = English|Win32
 		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.English|Win32.ActiveCfg = Debug|Win32
 		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.English|Win32.Build.0 = Debug|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Release|Any CPU.ActiveCfg = Release|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Release|Win32.ActiveCfg = Release|Win32
 		{FADEC7C5-F0CC-4982-B443-FF823AD4272D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
